@@ -8,10 +8,11 @@ CPathFinder::CPathFinder(AIClasses* aic) {
 	ai = aic;
 
 	// 8 = speed, 2 = precision
-	resmodifier = THREATRES;
+	resScale = THREATRES;
+	squareSize = SQUARE_SIZE * resScale;
 
-	PathMapXSize   = int(ai->cb->GetMapWidth() / resmodifier);
-	PathMapYSize   = int(ai->cb->GetMapHeight() / resmodifier);
+	PathMapXSize   = ai->cb->GetMapWidth() / resScale;
+	PathMapYSize   = ai->cb->GetMapHeight() / resScale;
 	totalcells     = PathMapXSize * PathMapYSize;
 	micropather    = new MicroPather(this, ai, totalcells);
 	TestMoveArray  = new bool[totalcells];
@@ -38,7 +39,7 @@ void CPathFinder::Init() {
 	for (int x = 0; x < PathMapXSize; x++) {
 		for (int y = 0; y < PathMapYSize; y++) {
 			int index = y * PathMapXSize + x;
-			HeightMap[index] = *(ai->cb->GetHeightMap() + int(y * resmodifier * resmodifier * PathMapXSize + resmodifier * x));
+			HeightMap[index] = *(ai->cb->GetHeightMap() + int(y * resScale * resScale * PathMapXSize + resScale * x));
 
 			if (HeightMap[index] > 0)
 				AverageHeight += HeightMap[index];
@@ -71,7 +72,7 @@ void CPathFinder::Init() {
 			maxslope = std::max(tempslope, maxslope);
 		}
 
-		SlopeMap[i] = maxslope * 6 / resmodifier;
+		SlopeMap[i] = maxslope * 6 / resScale;
 		if (SlopeMap[i] < 1)
 			SlopeMap[i] = 1;
 	}
@@ -233,8 +234,6 @@ void CPathFinder::CreateDefenseMatrix() {
 	}
 }
 
-void CPathFinder::PrintData(std::string) {
-}
 
 unsigned CPathFinder::Checksum() {
 	return micropather->Checksum();
@@ -253,7 +252,6 @@ void CPathFinder::Node2XY(void* node, int* x, int* y) {
 
 float3 CPathFinder::Node2Pos(void* node) {
 	float3 pos;
-	int multiplier = int(8 * resmodifier);
 	size_t index = (size_t)node;
 	pos.z = (index / PathMapXSize) * multiplier;
 	pos.x = (index - ((index / PathMapXSize) * PathMapXSize)) * multiplier;
@@ -262,7 +260,7 @@ float3 CPathFinder::Node2Pos(void* node) {
 }
 
 void* CPathFinder::Pos2Node(float3 pos) {
-	return ((void*) (int(pos.z / 8 / THREATRES) * PathMapXSize + int((pos.x / 8 / THREATRES))));
+	return ((void*) (int(pos.z / SQUARE_SIZE / THREATRES) * PathMapXSize + int((pos.x / SQUARE_SIZE / THREATRES))));
 }
 
 /*
@@ -276,16 +274,16 @@ float CPathFinder::MakePath(F3Vec& posPath, float3& startPos, float3& endPos, in
 	ai->math->F3MapBound(startPos);
 	ai->math->F3MapBound(endPos);
 
-	float totalcost = 0.0f;
+	float pathCost = 0.0f;
 
-	int ex = int(endPos.x / (8 * resmodifier));
-	int ey = int(endPos.z / (8 * resmodifier));
-	int sy = int(startPos.z / (8 * resmodifier));
-	int sx = int(startPos.x / (8 * resmodifier));
+	const int ex = int(endPos.x / squareSize);
+	const int ey = int(endPos.z / squareSize);
+	const int sy = int(startPos.z / squareSize);
+	const int sx = int(startPos.x / squareSize);
 
-	radius /= int(8 * resmodifier);
+	radius /= squareSize;
 
-	if (micropather->FindBestPathToPointOnRadius(XY2Node(sx, sy), XY2Node(ex, ey), &path, &totalcost, radius) == MicroPather::SOLVED) {
+	if (micropather->FindBestPathToPointOnRadius(XY2Node(sx, sy), XY2Node(ex, ey), &path, &pathCost, radius) == MicroPather::SOLVED) {
 		posPath.reserve(path.size());
 
 		for (unsigned i = 0; i < path.size(); i++) {
@@ -295,22 +293,29 @@ float CPathFinder::MakePath(F3Vec& posPath, float3& startPos, float3& endPos, in
 		}
 	}
 
-	return totalcost;
+	return pathCost;
 }
 
 
-float CPathFinder::FindBestPath(F3Vec& posPath, float3& startPos, float myMaxRange, F3Vec& possibleTargets) {
+float CPathFinder::FindBestPath(F3Vec& posPath, float3& startPos, float maxRange, F3Vec& possibleTargets) {
+	float pathCost = 0.0f;
+
+	// <maxRange> must always be >= squareSize, otherwise
+	// <radius> will become 0 and the write to offsets[0]
+	// below is undefined
+	if (maxRange < float(squareSize))
+		return pathCost;
+
 	ai->math->TimerStart();
 	path.clear();
 
-	// make a list with the points that will count as end nodes
-	float totalcost = 0.0f;
-	const unsigned int radius = int(myMaxRange / (8 * resmodifier));
-	int offsetSize = 0;
+	const unsigned int radius = maxRange / squareSize;
+	unsigned int offsetSize = 0;
 
 	std::vector<std::pair<int, int> > offsets;
 	std::vector<int> xend;
 
+	// make a list with the points that will count as end nodes
 	std::vector<void*> endNodes;
 	endNodes.reserve(possibleTargets.size() * radius * 10);
 
@@ -377,7 +382,7 @@ float CPathFinder::FindBestPath(F3Vec& posPath, float3& startPos, float myMaxRan
 		offsetSize = index;
 	}
 
-	for (unsigned i = 0; i < possibleTargets.size(); i++) {
+	for (unsigned int i = 0; i < possibleTargets.size(); i++) {
 		float3& f = possibleTargets[i];
 		int x, y;
 		// TODO: make the circle here
@@ -385,7 +390,7 @@ float CPathFinder::FindBestPath(F3Vec& posPath, float3& startPos, float myMaxRan
 		ai->math->F3MapBound(f);
 		Node2XY(Pos2Node(f), &x, &y);
 
-		for (int j = 0; j < offsetSize; j++) {
+		for (unsigned int j = 0; j < offsetSize; j++) {
 			const int sx = x + offsets[j].first;
 			const int sy = y + offsets[j].second;
 
@@ -397,7 +402,7 @@ float CPathFinder::FindBestPath(F3Vec& posPath, float3& startPos, float myMaxRan
 
 	ai->math->F3MapBound(startPos);
 
-	if (micropather->FindBestPathToAnyGivenPoint(Pos2Node(startPos), endNodes, &path, &totalcost) == MicroPather::SOLVED) {
+	if (micropather->FindBestPathToAnyGivenPoint(Pos2Node(startPos), endNodes, &path, &pathCost) == MicroPather::SOLVED) {
         posPath.reserve(path.size());
 
 		for (unsigned i = 0; i < path.size(); i++) {
@@ -410,14 +415,13 @@ float CPathFinder::FindBestPath(F3Vec& posPath, float3& startPos, float myMaxRan
 		}
 	}
 
-	return totalcost;
+	return pathCost;
 }
 
 float CPathFinder::FindBestPathToRadius(std::vector<float3>& posPath, float3& startPos, float radiusAroundTarget, const float3& target) {
 	std::vector<float3> posTargets;
 	posTargets.push_back(target);
-	float dist = FindBestPath(posPath, startPos, radiusAroundTarget, posTargets);
-	return dist;
+	return (FindBestPath(posPath, startPos, radiusAroundTarget, posTargets));
 }
 
 

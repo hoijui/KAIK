@@ -31,7 +31,7 @@ public:
 
 	bool IsPositionReachable(const MoveData*, const float3&) const;
 
-	void PrintData(std::string s);
+
 	MicroPather* micropather;
 	bool* TestMoveArray;
 	std::vector<bool*> MoveArrays;
@@ -47,7 +47,9 @@ public:
 private:
 	std::vector<void*> path;
 	float totalcost;
-	float resmodifier;
+
+	int resScale;
+	int squareSize;
 
 	AIClasses* ai;
 };
