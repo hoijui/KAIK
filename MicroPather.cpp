@@ -134,12 +134,13 @@ class OpenQueueBH {
 		int index = 1;
 		int smalest = 1;
 
-		{
-			LOOPING_HEAPIFY:
+		bool heapFixed = false;
+
+		while (!heapFixed) {
 			index = smalest;
-			int left = Left(index);
-			int right = Right(index);
-			// L("left: " << left << ", index: " << index);
+
+			const int left = Left(index);
+			const int right = Right(index);
 
 			if (left <= size && ((heapArray[left]->totalCost) < (heapArray[index]->totalCost)))
 				smalest = left;
@@ -149,7 +150,6 @@ class OpenQueueBH {
 			if (right <= size && ((heapArray[right]->totalCost) < (heapArray[smalest]->totalCost)))
 				smalest = right;
 
-			// L("index: " << index << ", smalest: " << smalest);
 			if (smalest != index) {
 				// swap them
 				PathNode* temp = heapArray[index];
@@ -158,8 +158,8 @@ class OpenQueueBH {
 
 				temp->myIndex = smalest;
 				heapArray[index]->myIndex = index;
-
-				goto LOOPING_HEAPIFY;
+			} else {
+				heapFixed = true;
 			}
 		}
 
