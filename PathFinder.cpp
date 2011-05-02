@@ -251,10 +251,11 @@ void CPathFinder::Node2XY(void* node, int* x, int* y) {
 }
 
 float3 CPathFinder::Node2Pos(void* node) {
+	const size_t index = (size_t)node;
+
 	float3 pos;
-	size_t index = (size_t)node;
-	pos.z = (index / PathMapXSize) * multiplier;
-	pos.x = (index - ((index / PathMapXSize) * PathMapXSize)) * multiplier;
+	pos.z = (index / PathMapXSize) * squareSize;
+	pos.x = (index - ((index / PathMapXSize) * PathMapXSize)) * squareSize;
 
 	return pos;
 }
