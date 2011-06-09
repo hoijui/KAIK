@@ -3,7 +3,9 @@
 
 #include <vector>
 
-struct UnitDef;
+namespace springLegacyAI {
+	struct UnitDef;
+} // namespace springLegacyAI
 
 class CMetalMaker;
 struct AIClasses;

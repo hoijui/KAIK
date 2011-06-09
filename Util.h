@@ -1,7 +1,11 @@
 #ifndef KAIK_UTIL_HDR
 #define KAIK_UTIL_HDR
 
-class IAICallback;
+namespace springLegacyAI {
+	class IAICallback;
+} // namespace springLegacyAI
+using namespace springLegacyAI;
+
 namespace AIUtil {
 	std::string GetAbsFileName(IAICallback*, const std::string&);
 

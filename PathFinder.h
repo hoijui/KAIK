@@ -6,7 +6,9 @@
 #include "MicroPather.h"
 
 struct AIClasses;
-struct MoveData;
+namespace springLegacyAI {
+	struct MoveData;
+} // namespace springLegacyAI
 using namespace NSMicroPather;
 
 typedef std::vector<float3> F3Vec;

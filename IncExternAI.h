@@ -15,4 +15,6 @@
 
 #include "ExternalAI/Interface/aidefines.h"          // SNPRINTF, STRCPY, ...
 
+using namespace springLegacyAI;
+
 #endif

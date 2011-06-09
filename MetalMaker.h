@@ -3,7 +3,6 @@
 
 #include <vector>
 
-class IAICallback;
 struct AIClasses;
 
 class CMetalMaker {

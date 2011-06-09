@@ -11,9 +11,11 @@
 #define DGUN_MAX_DAMAGE_LEVEL	(this->commanderUD->health / 4)
 #define DGUN_MIN_METAL_VALUE	500
 
-class IAICallback;
-struct UnitDef;
-struct WeaponDef;
+namespace springLegacyAI {
+	class IAICallback;
+	struct UnitDef;
+	struct WeaponDef;
+} // namespace springLegacyAI
 struct AIClasses;
 
 struct ControllerState {

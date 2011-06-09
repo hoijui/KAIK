@@ -4,7 +4,10 @@
 #include <string>
 #include <fstream>
 
-class IAICallback;
+namespace springLegacyAI {
+	class IAICallback;
+} // namespace springLegacyAI
+using namespace springLegacyAI;
 
 enum LogLevel {
 	LOG_BASIC,

@@ -2,7 +2,11 @@
 #define KAIK_COMMANDTRACKER_HDR
 
 struct AIClasses;
-struct Command;
+
+namespace springLegacyAI {
+	struct Command;
+} // namespace springLegacyAI
+
 class CCommandTracker {
 	public:
 		CCommandTracker(AIClasses* aic):

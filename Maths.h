@@ -18,7 +18,10 @@
 
 struct AIClasses;
 struct BuildTask;
-struct UnitDef;
+
+namespace springLegacyAI {
+	struct UnitDef;
+} // namespace springLegacyAI
 
 class CMaths {
 	public:

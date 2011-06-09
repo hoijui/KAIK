@@ -3,8 +3,10 @@
 
 #include "Defines.h"
 
-struct Command;
-struct UnitDef;
+namespace springLegacyAI {
+	struct Command;
+	struct UnitDef;
+} // namespace springLegacyAI
 struct AIClasses;
 
 class CUNIT {

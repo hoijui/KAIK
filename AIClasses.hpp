@@ -9,11 +9,14 @@
 #include "IncCREG.h"
 #include "Defines.h"
 
-struct UnitDef;
+namespace springLegacyAI {
+	struct UnitDef;
+	class IGlobalAICallback;
+	class IAICallback;
+	class IAICheats;
+} // namespace springLegacyAI
+using namespace springLegacyAI;
 
-class IGlobalAICallback;
-class IAICallback;
-class IAICheats;
 class CMetalMap;
 class CMaths;
 class CPathFinder;

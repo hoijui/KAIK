@@ -6,7 +6,9 @@
 
 class CSpotFinder;
 struct AIClasses;
-struct UnitDef;
+namespace springLegacyAI {
+	struct UnitDef;
+} // namespace springLegacyAI
 
 class CDefenseMatrix {
 	public:

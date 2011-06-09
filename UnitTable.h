@@ -6,10 +6,12 @@
 
 #include "Defines.h"
 
-struct UnitDef;
 struct AIClasses;
 struct UnitType;
-struct MoveData;
+namespace springLegacyAI {
+	struct MoveData;
+	struct UnitDef;
+} // namespace springLegacyAI
 
 struct CategoryData {
 	CR_DECLARE_STRUCT(CategoryData);
